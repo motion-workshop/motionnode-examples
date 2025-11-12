@@ -142,8 +142,7 @@ def stream_data_to_csv(args, out):
                     raise RuntimeError(
                         "unknown data format, unabled to print header")
 
-                out.write(
-                    ",".join(["{}".format(v) for v in flat_list]))
+                out.write(",".join(["{}".format(v) for v in flat_list]) + "\n")
 
             xml_node_list = None
 
@@ -162,10 +161,7 @@ def stream_data_to_csv(args, out):
         if not len(flat_list):
             raise RuntimeError("unknown data format in stream")
 
-        if(out == sys.stdout):
-            print(",".join(["{}".format(round(v, 8)) for v in flat_list]))
-        else:
-            out.write(",".join(["{}".format(round(v, 8)) for v in flat_list]))
+        out.write(",".join(["{}".format(round(v, 8)) for v in flat_list]) + "\n")
 
         if args.frames > 0:
             num_frames += 1
