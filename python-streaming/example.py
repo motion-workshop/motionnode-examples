@@ -113,8 +113,6 @@ def stream_data_to_csv(args, out):
                 ChannelName = [
                     'ax', 'ay', 'az', 'mx', 'my', 'mz', 
                     'gz', 'gy', 'gz', 'rx', 'ry', 'rz'
-                    #"Lqw", "Lqx", "Lqy", "Lqz",
-                    #"cw", "cx", "cy", "cz"
                 ]
 
                 flat_list = []
