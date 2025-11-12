@@ -18,6 +18,8 @@ angles (r).
 
 Configurable channels are documented in [configurable.xml](https://storage.googleapis.com/shadowmocap/configurable.xml)
 
+This example does not query whether a MotionNode is already connected and reading data, which is required.  Make sure to scan and start reading from at least one MotionNode device before running this script.
+
 ```
 python example.py  --help
 
