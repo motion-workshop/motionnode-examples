@@ -18,7 +18,23 @@ angles (r).
 
 Configurable channels are documented in [configurable.xml](https://storage.googleapis.com/shadowmocap/configurable.xml)
 
-This example does not query whether a MotionNode is already connected and reading data, which is required.  Make sure to scan and start reading from at least one MotionNode device before running this script.
+This example script first stops, scans, and starts reading from any connected MotionNode devices.  It prints out the list of connected nodes, which are available to the user as a dictionary:
+
+```
+Reading from:
+Node key: 2
+  name: Node01
+  uuid: 4166b70d-0825-434b-93f9-17a2ef537da9
+  accel_range: 2
+Node key: 4
+  name: Node2
+  uuid: 4166b70d-0825-434b-93f9-17a2ef537da9
+  accel_range: 2
+```
+
+Each MotionNode device has a unique uuid string.  This string can be useful to apply the same node's data to a specific data related task, regardless of the order in which the devices are enumerated (which may change, based on the USB driver).
+
+This example script also shows how to set the accelerometer sensitivity.  Each MotionNode device is calibrated at two sensitivities: ±2g and ±8g.  
 
 ```
 python example.py  --help
