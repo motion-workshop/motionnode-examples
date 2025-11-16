@@ -46,7 +46,8 @@ def parse_name_map(xml_node_list):
         name_map[int(itr.get("key"))] = itr.get("id")
 
     return name_map
-
+  
+  
 '''
 Scan and start reading from any connected MotionNode devices.
 Returns a list of node dictionaries describing each 
@@ -56,40 +57,77 @@ def scan_and_start_reading(args):
   
     node_list = []
     
-    # Use the Lua scripting interface to make scan and start reading 
-    # from any connected MotionNode devices on the specified host.
-    #
+    # Use the Lua scripting interface to remove current node list, and rescan
     lua_client = MotionSDK.Client(args.host, PortConsole)  
     lua_chunk = \
         " node.close()" \
-        " node.scan()" \
+        " node.scan()"
+    MotionSDK.LuaConsole.SendChunk(lua_client, lua_chunk, 5)
+
+    # Set the accelerometer max range (sensitivity)
+    # The MotionNode supports calibrated values of 2 or 8.
+    accel_range_valid_values = [2, 8]
+    if args.accel_range not in accel_range_valid_values:
+      print("Error, --accel-range possible values: {}".format(accel_range_valid_values))
+      return False, node_list
+    
+    lua_chunk = \
+        " result = node.set_gselect({})" \
+        " print(result)".format(args.accel_range)
+    console_result = MotionSDK.LuaConsole.SendChunk(lua_client, lua_chunk, 5)
+    if "false" in console_result:
+      print("Error setting accel_range={}".format(args.accel_range))
+      return False, node_list
+    
+    # Set the sampling rate based on input args.
+    # valid values are 100, 200, 400, 500, 1000.
+    sampling_rate_valid_values = [100, 200, 400, 500, 1000]
+    if args.sampling_rate not in sampling_rate_valid_values:
+      print("Error, --sampling-rate possible values: {}".format(sampling_rate_valid_values))
+      return False, node_list
+  
+    # setting is specified as time-step.  Convert from sampling rate.
+    args_time_step = 1.0 / args.sampling_rate
+    lua_chunk = \
+        " result = node.set_time_step({})" \
+        " print(result)".format(args_time_step)
+    console_result = MotionSDK.LuaConsole.SendChunk(lua_client, lua_chunk, 5)
+    if "false" in console_result:
+      print("Error setting sampling_rate={}".format(args_time_step))
+      return False, node_list
+    
+    # relist nodes and verify that all settings are correct.
+    lua_chunk = \
         " list = node.configuration()" \
         " print(list)"
     current_config = json.loads(MotionSDK.LuaConsole.SendChunk(lua_client, lua_chunk, 5))
+    
+    # add the node as dictionary to return list 
     for node in current_config['items']:
       if "Bus" not in node['name']:
+        
+        if args_time_step != node['time_step']:
+          print("Error: configured time_step {} != args time_step {}".format(node['time_step'], args_time_step))
+          return False, node_list
+          
+        if args.accel_range != node['gselect']:
+          print("Error: configured accel_range {} != args accel_range {}".format(node['gselect'], args.accel_range))
+          return False, node_list
+        
         node_dict = {}
         node_dict['key'] = node['key']
         node_dict['name'] = node['name']
         node_dict['uuid'] = node['uuid']
+        node_dict['sampling_rate'] = int(1.0 / node['time_step'])
         node_dict['accel_range'] = node['gselect']
         node_list.append(node_dict)
-    
+        
     if not len(node_list):
       print("Error: scanned node configuration is empty.")
       return False, node_list
-
-    # In this example, set the accelerometer max range (sensitivity)
-    # to 2g.  The MotionNode supports calibrated values of 2 or 8.
-    accel_range = 2
-    lua_chunk = \
-        " result = node.set_gselect({})" \
-        " print(result)".format(accel_range)
-    console_result = MotionSDK.LuaConsole.SendChunk(lua_client, lua_chunk, 5)
-    if "false" in console_result:
-      print("Error setting accel_range={}".format(accel_range))
-      return False, node_list
     
+    
+    # finally, start reading from the configured nodes.
     lua_chunk = \
         " node.start()" \
         " if node.is_reading() then" \
@@ -117,8 +155,8 @@ def stream_data_to_csv(args, out):
     print("Reading from:")
     
     for node in node_list:
-      print("Node key: {}\n  name: {}\n  uuid: {}\n  accel_range: {}\n".format(node['key'], 
-            node['name'], node['uuid'], node['accel_range']))    
+      print("Node key: {}\n  name: {}\n  uuid: {}\n  sampling-rate: {} Hz\n  accel-range: {} g\n".format(node['key'], 
+            node['name'], node['uuid'], node['sampling_rate'], node['accel_range']))    
 
 
     # Request the channels that we want from every connected device. The full
@@ -260,6 +298,14 @@ def main(argv):
         "--port",
         help="port number address of the Motion Service",
         type=int, default=32076)
+    parser.add_argument(
+        "--accel-range",
+        help="accelerometer sensitivity (range)",
+        type=int, default=2)
+    parser.add_argument(
+        "--sampling-rate",
+        help="sampling rate in Hz",
+        type=int, default=100)
 
     args = parser.parse_args()
 

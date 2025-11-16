@@ -25,16 +25,20 @@ Reading from:
 Node key: 2
   name: Node01
   uuid: 4166b70d-0825-434b-93f9-17a2ef537da9
-  accel_range: 2
+  sampling rate: 100Hz
+  accel_range: 2 g
 Node key: 4
   name: Node2
   uuid: 4166b70d-0825-434b-93f9-17a2ef537da9
-  accel_range: 2
+  sampling rate: 100Hz
+  accel_range: 2 g
 ```
 
 Each MotionNode device has a unique uuid string.  This string can be useful to apply the same node's data to a specific data related task, regardless of the order in which the devices are enumerated (which may change, based on the USB driver).
 
 This example script also shows how to set the accelerometer sensitivity.  Each MotionNode device is calibrated at two sensitivities: ±2g and ±8g.  
+
+The sampling rate can also be specified in Hz (fps).  Valid values are: [100, 200, 400, 500, 1000]
 
 ```
 python example.py  --help
@@ -49,17 +53,19 @@ optional arguments:
   --header         show channel names in the first row
   --host HOST      IP address of the Motion Service
   --port PORT      port number of the Motion Service
+  --accel-range    accelerometer range (sensitivity)
+  --sampling-rate  sampling rate in Hz
 ```
 
 ## Examples
 
-1. Output the stream to a csv file which you can open in spreadsheet editor (Openoffice, Libreoffice, Excel).  Include a header on the first line of the csv file:
+1. Output the stream to a csv file which you can open in spreadsheet editor (Openoffice, Libreoffice, Excel).  Include a header on the first line of the csv file.  The file is specified relative to the current working directory, or can be specified as a full path relative:
 
 ```console
 python example.py --header --file ./streamed_data.csv
 ```
 
-2. Output the stream to the terminal.
+2. Output the stream to the terminal, and include the header showing channel names
 
 ```console
 python example.py --header
@@ -68,6 +74,17 @@ python example.py --header
 3. Motion SDK uses TCP/IP sockets, so it is easy to stream over the network as shown in thsi example.  A MotionNode sensor is running on a different computer on your network.  Connect by specifying the hostname or ip address (here, 192.168.1.100).
 
 ```console
-python example.py --header --host 192.168.1.100
+python example.py --host 192.168.1.100
 ```
 
+4. Specify the accelerometer sensitivity.  Select ±8g:
+
+```console
+python example.py --accel-range 8
+```
+
+5. Specify the sampling rate.  Select 1000 Hz:
+
+```console
+python example.py --sampling-rate 1000
+```
