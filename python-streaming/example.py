@@ -61,6 +61,7 @@ def scan_and_start_reading(args):
     lua_client = MotionSDK.Client(args.host, PortConsole)  
     lua_chunk = \
         " node.close()" \
+        " node.erase()" \
         " node.scan()"
     MotionSDK.LuaConsole.SendChunk(lua_client, lua_chunk, 5)
 
