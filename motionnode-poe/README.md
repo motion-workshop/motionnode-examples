@@ -150,29 +150,23 @@ The MotionNode POE device will produce the most accurate heading output when you
 
 You can configure the MotionNode POE device to use a static IP address if you prefer to not use DHCP on your network for IP address assignment, or if it is more convenient.  
 
-Please note that you can choose to either set the gateway and dns resolution ip addresses, or leave them blank.  If you leave them blank, then the MotionNode POE device will attempt to set its gateway and dns resolution ip addresses using DHCP. 
+You can choose to either set the gateway and dns resolution ip addresses, or leave them blank.  If you leave them blank, then the MotionNode POE device will have no connection outside of the local area network.  This will not affect its performance, but may be required in some security scenarios. 
 
-To set the static IP address, two options are available:  either use the web browser interface on the device, or use the included python [set_static_ip](../scripts/set_static_ip.py) script.
+To set the static IP address, use the included *set_static_ip.sh* bash script.  Please see the [set_static_ip README](../README_tools.md#set_static_ip-script) for more details.  
 
-### Option 1. Use the web browser interface
+In this example let's say that we would like to assign a new static ip of **192.168.1.100**, with no gateway or dns resolver. 
 
-Connect the MotionNode POE device to the network and wait a bit (30-40 seconds) for it to boot up.  Open a web browser and browser to its console:
-
-[http://motionnode.local:32080/#/console](http://motionnode.local:32080/#/console)
-
-Alternatively, if your MotionNode POE has a static IP assigned already (say, 192.168.1.201), you would browse to it directly:
-
-[http://192.168.1.201:32080/#/console](http://192.168.1.201:32080/#/console)
-
-In this example let's say that we would like to assign a new static ip of **192.168.1.100**. In the console command entry box, run the following command:
-
+```console
+$ cd ../scripts
+$ ./set_static_ip.sh --host motionnode.local --ip 192.168.1.100 --gateway "" --dns ""
+Setting networking config for host motionnode.local
+Static IP = 192.168.1.100
+Gateway IP = 
+DNS Resolver = 
+remote@motionnode.local's password:
+Connection to motionnode.local closed.
+New networking config set.  Please power cycle the MotionNode POE device now.
 ```
-=node.system.set_default("static_ip", "192.168.1.100")
-=node.system.set_default("static_gateway", "192.168.1.1")
-=node.system.set_default("static_dns", "8.8.8.8,8.8.4.4")
-```
-
-Note that the *static_gateway* and *static_dns* are not strictly necessary, if your network delivers this information via DHCP, or if you do not wish for the device to pass traffic through the gateway.
 
 Now reboot the MotionNode POE device by unplug/plug power cycling.  After giving it time to boot up, you can ping it to verify the new IP address is correctly configured:
 
@@ -180,27 +174,20 @@ Now reboot the MotionNode POE device by unplug/plug power cycling.  After giving
 ping 192.168.1.100
 ```
 
-### Option 2. Use the Python set_static_ip script
-
-You can set a static ip address using the included [set_static_ip](../scripts/set_static_ip.py) script.   Please see the [set_static_ip README](../README_tools.md#set_static_ip-script) for usage.
-
-
 ## Removing a configured static IP address
 
-You can revert to using DHCP and remove a static IP configuration.  Once the static IP address is removed, the MotionNode POE device will be receive an IP address via DHCP.  In this example the currently configured static IP address is **192.168.1.201**.
+You can revert to using DHCP and remove a static IP configuration.  Once the static IP address is removed, the MotionNode POE device will be receive an IP address via DHCP.  To revert to using DHCP, use the included *set_dynamic_ip.sh* bash script.  Please see the [set_dynamic_ip README](../README_tools.md#removing-a-static-ip) for more details.
 
-### Option 1. Use the web browser interface
+In this example the currently configured static IP address for the MotionNode POE device is **192.168.1.201**.
 
-Connect the MotionNode POE device to the network and wait a bit (30-40 seconds) for it to boot up.  Open a web browser and browser to its console:
-
-[http://192.168.1.201:32080/#/console](http://192.168.1.201:32080/#/console)
-
-In the console command entry box, run the following command:
-
-```
-=node.system.set_default("static_ip", "")
-=node.system.set_default("static_gateway", "")
-=node.system.set_default("static_dns", "")
+```console
+$ cd ../scripts
+$ ./set_dynamic_ip.sh --host 192.168.1.201
+Setting networking config for host 192.168.1.201
+Dynamic IP using DHCP.
+remote@192.168.1.201's password:
+Connection to 192.168.1.201 closed.
+New networking config set.  Please power cycle the MotionNode POE device now.
 ```
 
 Now reboot the MotionNode POE device by unplug/plug power cycling.  After giving it time to boot up, you can ping it to verify the new IP address is correctly configured (assigned by DHCP server on your network):
@@ -208,11 +195,6 @@ Now reboot the MotionNode POE device by unplug/plug power cycling.  After giving
 ```
 ping motionnode.local
 ```
-
-### Option 2. Use the Python set_static_ip script
-
-Remove a static ip using the [set_static_ip](../scripts/set_static_ip.py) script.   Please see the [set_static_ip README](../README_tools.md#removing-a-static-ip) for usage.
-
 
 
 
