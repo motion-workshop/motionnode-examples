@@ -33,9 +33,10 @@ echo "Setting networking config for host ${HOST}"
 echo "Dynamic IP using DHCP."
 
 CMD1="sudo rm /etc/netplan/*.yaml &> /dev/null" 
-CMD2="sudo nmcli connection modify \"Wired connection 1\" ipv4.method auto"
+CMD2="sudo netplan apply"
+CMD3="sudo nmcli connection modify \"Wired connection 1\" ipv4.method auto"
 
-SSH_CMD="ssh -t remote@${HOST} ${CMD1}; ${CMD2}"
+SSH_CMD="ssh -t remote@${HOST} ${CMD1}; ${CMD2}; ${CMD3}"
 ${SSH_CMD}
 if [ $? -eq 0 ]; then
   echo "New networking config set.  Please power cycle the MotionNode POE device now."
